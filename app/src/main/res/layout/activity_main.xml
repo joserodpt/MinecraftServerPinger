@@ -14,6 +14,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="@font/roboto"
         android:text="@string/app_header"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.45"

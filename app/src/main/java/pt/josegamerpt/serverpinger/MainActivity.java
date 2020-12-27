@@ -1,11 +1,12 @@
 package pt.josegamerpt.serverpinger;
 
-import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -41,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
     SweetAlertDialog pinging;
     JSONObject get;
-
     Drawable icon;
 
     TextInputEditText ip = null;
@@ -52,9 +52,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AppUtils.setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        getWindow().setStatusBarColor(Color.WHITE);
+        checkDark(getResources().getConfiguration());
 
         ip = findViewById(R.id.ipinput);
         port = findViewById(R.id.portinput);
@@ -109,10 +107,9 @@ public class MainActivity extends AppCompatActivity {
             Needle.onBackgroundThread().execute(new UiRelatedTask() {
                 @Override
                 protected Object doWork() {
-                    return getInfo(link);
+                    return getInfoFromAPI(link);
                 }
 
-                @SuppressLint("UseCompatLoadingForDrawables")
                 @Override
                 protected void thenDoUiRelatedWork(Object o) {
                     TextView t1 = findViewById(R.id.replyJson);
@@ -165,6 +162,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void checkDark(Configuration config)
+    {
+        int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        switch (currentNightMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                // Night mode is not active, we're using the light theme
+                AppUtils.setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                getWindow().setStatusBarColor(Color.WHITE);
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setNavigationBarColor(Color.WHITE);
+                }
+                break;
+            case Configuration.UI_MODE_NIGHT_YES:
+                // Night mode is active, we're using dark theme
+                AppUtils.setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+                getWindow().setStatusBarColor(Color.BLACK);
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getWindow().setNavigationBarColor(Color.BLACK);
+                }
+                break;
+        }
+    }
+
+    //dark mode support
+    @Override
+    public void onConfigurationChanged(Configuration config) {
+        super.onConfigurationChanged(config);
+        checkDark(config);
+    }
+
+    //sucess ping
     private void sucess() throws JSONException {
         //icon
 
@@ -209,8 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
         JSONObject mtd = get.getJSONObject("motd");
 
-        switch (mtd.getJSONArray("html").length())
-        {
+        switch (mtd.getJSONArray("html").length()) {
             case 1:
                 motd.setText(HtmlCompat.fromHtml(mtd.getJSONArray("html").get(0).toString().replaceAll("^\\s+", "").replaceAll("\\s+$", ""), HtmlCompat.FROM_HTML_MODE_LEGACY), TextView.BufferType.SPANNABLE);
                 break;
@@ -228,8 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
             ArrayList<String> playerList = new ArrayList<>();
             JSONArray playerListArray = players.getJSONArray("list");
-            for (int i = 0; i < playerListArray.length(); i++)
-            {
+            for (int i = 0; i < playerListArray.length(); i++) {
                 playerList.add(playerListArray.get(i).toString());
             }
 
@@ -244,14 +271,12 @@ public class MainActivity extends AppCompatActivity {
         //mods
 
         if (get.has("mods")) {
-            TextView textplayerlist = findViewById(R.id.mods);
 
             ArrayList<String> modsList = new ArrayList<>();
             JSONObject mods = get.getJSONObject("mods");
 
             JSONArray modslistarray = mods.getJSONArray("names");
-            for (int i = 0; i < modslistarray.length(); i++)
-            {
+            for (int i = 0; i < modslistarray.length(); i++) {
                 modsList.add(modslistarray.get(i).toString());
             }
             TextView modstext = findViewById(R.id.mods);
@@ -267,7 +292,8 @@ public class MainActivity extends AppCompatActivity {
         pinging.dismissWithAnimation();
     }
 
-    public Object getInfo(String link) {
+    //retrieve info from api
+    public Object getInfoFromAPI(String link) {
         HttpURLConnection connection = null;
         BufferedReader reader = null;
 
@@ -282,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
             reader = new BufferedReader(new InputStreamReader(stream));
 
             StringBuilder buffer = new StringBuilder();
-            String line = "";
+            String line;
 
             while ((line = reader.readLine()) != null) {
                 buffer.append(line).append("\n");
