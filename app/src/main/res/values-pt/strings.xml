@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pinger de Servers Minecraft</string>
+    <string name="name_server_icon">Icon do Servidor</string>
+    <string name="no_server_mod">Este servidor não têm MOTD</string>
+    <string name="app_header">Pinger de Servers Minecraft</string>
+    <string name="hint_ip">IP do Servidor</string>
+    <string name="hint_port">Porta</string>
+    <string name="section_generalserverinfo">- Informação Geral -</string>
+    <string name="waiting_ping">Aguardando um ping...</string>
+    <string name="section_players">- Jogadores -</string>
+    <string name="section_mods">- Lista de Mods -</string>
+    <string name="section_technical">- Dados JSON &amp; Depuração -</string>
+    <string name="app_footer">usando api.mcsrvstat.us por Anders G. Jørgensen | spirit55555.dk</string>
+    <string name="server_not_found">Server não encontrado...</string>
+    <string name="server_offline">O servidor parece estar offline. Volta a verificar o IP e a PORTA.</string>
+    <string name="get_error">Um erro ocorreu. DEBUG:</string>
+    <string name="name_players">"Jogadores: "</string>
+    <string name="name_version">"Versão: "</string>
+    <string name="name_protocol">"Protocolo: "</string>
+    <string name="app_gettinginfo">A obter informações... Por favor aguarda</string>
+</resources>
