@@ -19,4 +19,5 @@
     <string name="name_version">"Version: "</string>
     <string name="name_protocol">"Protocol: "</string>
     <string name="app_gettinginfo">Retrieving information.. Please wait..</string>
+    <string name="no_internet">There is no Internet. Please check your Internet Connection.</string>
 </resources>

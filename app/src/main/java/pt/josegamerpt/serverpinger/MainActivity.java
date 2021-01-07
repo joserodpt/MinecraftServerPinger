@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -72,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         tfoot.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme);
             builder.setTitle("About this app");
-            builder.setMessage("Developed by José Rodrigues\nSource code available on Github\nCopyright 2020");
+            builder.setMessage("Developed by José Rodrigues\nSource code available on Github\nCopyright 2020-2021");
             builder.setCancelable(false);
 
             String positiveText = getString(android.R.string.ok);
@@ -95,75 +97,90 @@ public class MainActivity extends AppCompatActivity {
         });
 
         PushDownAnim.setPushDownAnimTo(findViewById(R.id.go)).setOnClickListener(v -> {
-            pinging = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.PROGRESS_TYPE);
-            pinging.getProgressHelper().setBarColor(Color.BLUE);
-            pinging.setTitleText(getApplicationContext().getString(R.string.app_gettinginfo));
-            pinging.setCancelable(false);
-            pinging.show();
+            if (checks()) {
+                if (!TextUtils.isEmpty(ip.getText())) {
+                    pinging = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.PROGRESS_TYPE);
+                    pinging.getProgressHelper().setBarColor(Color.BLUE);
+                    pinging.setTitleText(getApplicationContext().getString(R.string.app_gettinginfo));
+                    pinging.setCancelable(false);
+                    pinging.show();
 
-            //makeURL
-            final String link = "https://api.mcsrvstat.us/2/" + ip.getText() + ":" + port.getText();
+                    //makeURL
+                    final String link = "https://api.mcsrvstat.us/2/" + ip.getText() + ":" + port.getText();
 
-            Needle.onBackgroundThread().execute(new UiRelatedTask() {
-                @Override
-                protected Object doWork() {
-                    return getInfoFromAPI(link);
-                }
-
-                @Override
-                protected void thenDoUiRelatedWork(Object o) {
-                    TextView t1 = findViewById(R.id.replyJson);
-                    try {
-                        get = new JSONObject(o.toString());
-                        t1.setText(get.toString());
-                        if (!get.getBoolean("online")) {
-
-                            String notfound = getApplicationContext().getString(R.string.server_not_found);
-                            final SweetAlertDialog off = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.WARNING_TYPE);
-                            off.setTitleText(getApplicationContext().getString(R.string.server_offline));
-                            off.setConfirmButton(getApplicationContext().getString(android.R.string.ok), sweetAlertDialog -> {
-                                off.dismissWithAnimation();
-                                pinging.dismissWithAnimation();
-                            });
-                            off.show();
-
-                            TextView slots = findViewById(R.id.slots);
-                            slots.setText(notfound);
-                            TextView ver = findViewById(R.id.version);
-                            ver.setText(notfound);
-                            TextView prot = findViewById(R.id.protocol);
-                            prot.setText(notfound);
-                            TextView motd = findViewById(R.id.motd);
-                            motd.setText(notfound);
-                            findViewById(R.id.playerdata).setVisibility(View.GONE);
-                            findViewById(R.id.modsdata).setVisibility(View.GONE);
-                            ImageView v = findViewById(R.id.servericon);
-                            v.setImageDrawable(getApplicationContext().getDrawable(R.drawable.unknownsrvr));
-
-                            //TODO:
-
-                        } else {
-                            sucess();
+                    Needle.onBackgroundThread().execute(new UiRelatedTask() {
+                        @Override
+                        protected Object doWork() {
+                            return getInfoFromAPI(link);
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        final SweetAlertDialog off = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.ERROR_TYPE);
-                        off.setTitleText(getApplicationContext().getString(R.string.get_error) + e.getMessage());
-                        off.setConfirmButton(getApplicationContext().getString(android.R.string.ok), sweetAlertDialog -> {
-                            off.dismissWithAnimation();
-                            pinging.dismissWithAnimation();
-                        });
-                        off.setCancelable(false);
-                        off.show();
-                    }
 
+                        @Override
+                        protected void thenDoUiRelatedWork(Object o) {
+                            TextView t1 = findViewById(R.id.replyJson);
+                            try {
+                                get = new JSONObject(o.toString());
+                                t1.setText(get.toString());
+                                if (!get.getBoolean("online")) {
+
+                                    String notfound = getApplicationContext().getString(R.string.server_not_found);
+                                    final SweetAlertDialog off = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.WARNING_TYPE);
+                                    off.setTitleText(getApplicationContext().getString(R.string.server_offline));
+                                    off.setConfirmButton(getApplicationContext().getString(android.R.string.ok), sweetAlertDialog -> {
+                                        off.dismissWithAnimation();
+                                        pinging.dismissWithAnimation();
+                                    });
+                                    off.show();
+
+                                    TextView slots = findViewById(R.id.slots);
+                                    slots.setText(notfound);
+                                    TextView ver = findViewById(R.id.version);
+                                    ver.setText(notfound);
+                                    TextView prot = findViewById(R.id.protocol);
+                                    prot.setText(notfound);
+                                    TextView motd = findViewById(R.id.motd);
+                                    motd.setText(notfound);
+                                    findViewById(R.id.playerdata).setVisibility(View.GONE);
+                                    findViewById(R.id.modsdata).setVisibility(View.GONE);
+                                    ImageView v = findViewById(R.id.servericon);
+                                    v.setImageDrawable(getApplicationContext().getDrawable(R.drawable.unknownsrvr));
+                                } else {
+                                    sucess();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                final SweetAlertDialog off = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.ERROR_TYPE);
+                                off.setTitleText(getApplicationContext().getString(R.string.get_error) + e.getMessage());
+                                off.setConfirmButton(getApplicationContext().getString(android.R.string.ok), sweetAlertDialog -> {
+                                    off.dismissWithAnimation();
+                                    pinging.dismissWithAnimation();
+                                });
+                                off.setCancelable(false);
+                                off.show();
+                            }
+
+                        }
+
+                    });
                 }
-            });
+            } else {
+                SweetAlertDialog err = new SweetAlertDialog(findViewById(R.id.main).getContext(), SweetAlertDialog.WARNING_TYPE);
+                err.setTitleText(getApplicationContext().getString(R.string.no_internet));
+                err.setCancelable(false);
+                err.show();
+            }
         });
     }
 
-    public void checkDark(Configuration config)
-    {
+    private boolean checks() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
+
+    public void checkDark(Configuration config) {
         int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         switch (currentNightMode) {
             case Configuration.UI_MODE_NIGHT_NO:
@@ -171,17 +188,13 @@ public class MainActivity extends AppCompatActivity {
                 AppUtils.setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                 getWindow().setStatusBarColor(Color.WHITE);
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    getWindow().setNavigationBarColor(Color.WHITE);
-                }
+                getWindow().setNavigationBarColor(Color.WHITE);
                 break;
             case Configuration.UI_MODE_NIGHT_YES:
                 // Night mode is active, we're using dark theme
                 AppUtils.setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
                 getWindow().setStatusBarColor(Color.BLACK);
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    getWindow().setNavigationBarColor(Color.BLACK);
-                }
+                getWindow().setNavigationBarColor(Color.BLACK);
                 break;
         }
     }

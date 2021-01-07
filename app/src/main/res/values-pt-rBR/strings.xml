@@ -18,5 +18,6 @@
     <string name="name_players">"Jogadores: "</string>
     <string name="name_version">"Versão: "</string>
     <string name="name_protocol">"Protocolo: "</string>
-    <string name="app_gettinginfo">Carregando... Por favor aguarde</string>
+    <string name="app_gettinginfo">A carregar.. favor aguardar...</string>
+    <string name="no_internet">Não há conexão. Verifica a tua ligação.</string>
 </resources>
